@@ -1,21 +1,134 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111111"><title>Gregory Sketch</title><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"></head><body>
-<header class="app-header"><div><h1>Gregory Sketch</h1><p>Offline appraisal sketch tool</p></div><button id="newJobTop" class="ghost">New Job</button></header>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Gregory Sketch</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div><h1>Gregory Sketch</h1><p>Offline appraisal field sketch tool</p></div>
+  <button id="newJobTop" class="ghost">New Job</button>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="sketchTab">SKETCH</button>
+  <button class="tab" data-tab="notesTab">NOTES</button>
+</nav>
+
 <main>
-<section class="card controls">
-<label>Property / Assignment<input id="jobName" placeholder="e.g. Smith Residence" autocomplete="off"></label>
-<div class="row"><label>Feet<input id="feet" inputmode="decimal" type="number" min="0" step="1" value="10"></label><label>Inches<input id="inches" inputmode="decimal" type="number" min="0" max="11.99" step="0.25" value="0"></label></div>
-<div class="row"><label>Area label<input id="areaLabel" value="1st Floor"></label><label>Area type<select id="areaType"><option value="gla">GLA</option><option value="nongla">Non-GLA</option></select></label></div>
-<div class="direction-grid"><button data-dir="up">↑ Up</button><button data-dir="left">← Left</button><button data-dir="right">Right →</button><button data-dir="down">↓ Down</button></div>
-<div class="row buttons"><button id="undoBtn">Undo</button><button id="closeBtn">Close Shape</button><button id="commitAreaBtn">Save Area</button></div>
-<div class="row buttons"><button id="editLastBtn">Edit Last Wall</button><button id="deleteAreaBtn">Delete Area</button><button id="clearCurrentBtn">Clear Current</button></div>
-<div class="row buttons"><button id="saveBtn">Save Job</button><button id="manageBtn">My Sketches</button></div>
-<div class="row buttons"><button id="backupBtn">Export Backup</button><label class="file-button">Restore Backup<input id="restoreInput" type="file" accept=".json,application/json" hidden></label></div>
-<div class="row buttons"><button id="exportBtn">Export PNG</button><button id="printBtn">Print / PDF</button></div>
-<div class="summary"><div><strong>Current area:</strong> <span id="currentArea">0 SF</span></div><div><strong>GLA total:</strong> <span id="glaTotal">0 SF</span></div><div><strong>Non-GLA total:</strong> <span id="nonglaTotal">0 SF</span></div></div>
-<div class="help">Tip: before drawing a wall, tap anywhere on the grid to choose your starting point. Tap a completed area, then use Move Area to drag it.</div>
+<section id="sketchTab" class="tab-page active">
+  <section class="card controls">
+    <label>Property / Assignment
+      <input id="jobName" placeholder="Enter property address or assignment name" autocomplete="off">
+    </label>
+
+    <div class="row">
+      <label class="grow">Measurement
+        <input id="measurement" inputmode="decimal" placeholder="12, 12.5, or 12'6&quot;">
+      </label>
+      <label>Area type
+        <select id="areaType"><option value="gla">GLA</option><option value="nongla">Non-GLA</option></select>
+      </label>
+    </div>
+
+    <label>Area label<input id="areaLabel" value="1st Floor"></label>
+
+    <div class="direction-grid eight">
+      <button data-dir="upleft" aria-label="Up left">↖</button>
+      <button data-dir="up" aria-label="Up">↑</button>
+      <button data-dir="upright" aria-label="Up right">↗</button>
+      <button data-dir="left" aria-label="Left">←</button>
+      <div class="direction-center">START</div>
+      <button data-dir="right" aria-label="Right">→</button>
+      <button data-dir="downleft" aria-label="Down left">↙</button>
+      <button data-dir="down" aria-label="Down">↓</button>
+      <button data-dir="downright" aria-label="Down right">↘</button>
+    </div>
+
+    <div class="row buttons">
+      <button id="undoBtn">Undo</button>
+      <button id="newStartBtn">New Start Point</button>
+      <button id="closeBtn">Close Shape</button>
+      <button id="commitAreaBtn">Save Area</button>
+    </div>
+
+    <div class="row buttons">
+      <button id="editLastBtn">Edit Last Wall</button>
+      <button id="moveAreaBtn">Move Area</button>
+      <button id="deleteAreaBtn">Delete Area</button>
+      <button id="clearCurrentBtn">Clear Current</button>
+    </div>
+
+    <div class="tool-box">
+      <strong>Room labels</strong>
+      <div class="row">
+        <select id="roomPreset">
+          <option>Living Room</option><option>Kitchen</option><option>Dining Room</option>
+          <option>Bedroom</option><option>Bathroom</option><option>Primary Bedroom</option>
+          <option>Primary Bath</option><option>Laundry</option><option>Office</option>
+          <option>Bonus Room</option><option>Foyer</option><option>Hall</option>
+          <option>Garage</option><option>Basement</option><option>Custom</option>
+        </select>
+        <input id="customRoom" placeholder="Custom room" class="grow">
+        <button id="placeRoomBtn">Place Room Label</button>
+      </div>
+    </div>
+
+    <div class="tool-box">
+      <strong>Symbols / objects</strong>
+      <div class="symbol-row">
+        <button data-symbol="car">🚗 Car</button>
+        <button data-symbol="truck">🚙 SUV/Truck</button>
+        <button data-symbol="garage">▥ Garage Door</button>
+        <button data-symbol="stairs">⇅ Stairs</button>
+        <button data-symbol="fireplace">▣ Fireplace</button>
+      </div>
+    </div>
+
+    <div class="row buttons">
+      <button id="saveBtn">Save Job</button><button id="manageBtn">My Sketches</button>
+      <button id="backupBtn">Export Backup</button>
+      <label class="file-button">Restore Backup<input id="restoreInput" type="file" accept=".json,application/json" hidden></label>
+    </div>
+    <div class="row buttons"><button id="exportBtn">Export PNG</button><button id="printBtn">Print / PDF</button></div>
+
+    <div class="summary">
+      <div><strong>Current area:</strong> <span id="currentArea">0 SF</span></div>
+      <div><strong>GLA total:</strong> <span id="glaTotal">0 SF</span></div>
+      <div><strong>Non-GLA total:</strong> <span id="nonglaTotal">0 SF</span></div>
+    </div>
+    <div id="modeMessage" class="help">Tap the grid to choose your starting point. The bright marker shows where the next wall begins.</div>
+  </section>
+
+  <section class="card canvas-wrap">
+    <div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div>
+    <div id="viewport"><svg id="sketch" viewBox="0 0 1200 800" aria-label="Sketch canvas">
+      <g id="grid"></g><g id="completedLayer"></g><g id="currentLayer"></g><g id="annotationLayer"></g><g id="markerLayer"></g>
+    </svg></div>
+  </section>
+  <section class="card"><h2>Areas</h2><div id="areasList">No completed areas yet.</div></section>
 </section>
-<section class="card canvas-wrap"><div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div><div id="viewport"><svg id="sketch" viewBox="0 0 1200 800" aria-label="Sketch canvas"><g id="grid"></g><g id="completedLayer"></g><g id="currentLayer"></g></svg></div></section>
-<section class="card saved-areas-card"><h2>Areas</h2><div id="areasList">No completed areas yet.</div></section>
+
+<section id="notesTab" class="tab-page">
+  <section class="card notes-card">
+    <h2>Inspection Notes</h2>
+    <p class="help">These notes save with this property on this device.</p>
+    <label>Updates / Renovations<textarea id="notesUpdates" rows="6" placeholder="Kitchen updates, bathroom renovations, dates, permits, quality..."></textarea></label>
+    <label>Condition / Repairs<textarea id="notesCondition" rows="5" placeholder="Deferred maintenance, damage, needed repairs, observed condition..."></textarea></label>
+    <label>Materials / Features<textarea id="notesFeatures" rows="5" placeholder="Flooring, countertops, appliances, roof, HVAC, exterior materials, special features..."></textarea></label>
+    <label>Other Notes<textarea id="notesOther" rows="8" placeholder="Any other inspection notes..."></textarea></label>
+    <button id="saveNotesBtn">Save Notes</button>
+  </section>
+</section>
 </main>
+
 <div id="modal" class="modal hidden"><div class="modal-panel"><div class="modal-head"><h2>My Sketches</h2><button id="closeModal" class="ghost">Close</button></div><div id="jobsList"></div></div></div>
-<footer>Gregory Appraisals, LLC</footer><script src="app.js"></script><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js');}</script></body></html>
+<footer>Gregory Appraisals, LLC</footer>
+<script src="app.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js');}</script>
+</body></html>
