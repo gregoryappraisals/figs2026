@@ -1,91 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#111111" />
-  <title>Gregory Sketch</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <header>
-    <h1>Gregory Sketch</h1>
-    <p>Offline appraisal sketch tool</p>
-  </header>
-
-  <main>
-    <section class="card controls">
-      <label>
-        Property / Assignment
-        <input id="jobName" placeholder="e.g. 14301 Woolsey Rd" />
-      </label>
-
-      <div class="row">
-        <label>Feet <input id="feet" type="number" min="0" step="1" value="10" /></label>
-        <label>Inches <input id="inches" type="number" min="0" max="11.99" step="0.25" value="0" /></label>
-      </div>
-
-      <label>
-        Area label
-        <select id="areaLabel">
-          <option>1st Floor</option>
-          <option>2nd Floor</option>
-          <option>Garage</option>
-          <option>Porch</option>
-          <option>Basement</option>
-          <option>Office</option>
-          <option>Warehouse</option>
-          <option>Other</option>
-        </select>
-      </label>
-
-      <div class="direction-grid">
-        <button data-dir="up">↑ Up</button>
-        <button data-dir="left">← Left</button>
-        <button data-dir="right">Right →</button>
-        <button data-dir="down">↓ Down</button>
-      </div>
-
-      <div class="row buttons">
-        <button id="undoBtn">Undo</button>
-        <button id="closeBtn">Close Shape</button>
-        <button id="newAreaBtn">New Area</button>
-      </div>
-
-      <div class="row buttons">
-        <button id="saveBtn">Save Job</button>
-        <button id="loadBtn">Load Job</button>
-        <button id="exportBtn">Export PNG</button>
-        <button id="printBtn">Print / PDF</button>
-      </div>
-
-      <div class="summary">
-        <strong>Current area:</strong> <span id="currentArea">0 SF</span><br />
-        <strong>Total included area:</strong> <span id="totalArea">0 SF</span>
-      </div>
-    </section>
-
-    <section class="card canvas-wrap">
-      <svg id="sketch" viewBox="0 0 900 650" aria-label="Sketch canvas">
-        <g id="grid"></g>
-        <g id="drawing"></g>
-      </svg>
-    </section>
-
-    <section class="card">
-      <h2>Saved Areas</h2>
-      <div id="areasList">No completed areas yet.</div>
-    </section>
-  </main>
-
-  <footer>Gregory Appraisals, LLC</footer>
-
-  <script src="app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.js");
-    }
-  </script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111111"><title>Gregory Sketch</title><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"></head><body>
+<header class="app-header"><div><h1>Gregory Sketch</h1><p>Offline appraisal sketch tool</p></div><button id="newJobTop" class="ghost">New Job</button></header>
+<main>
+<section class="card controls">
+<label>Property / Assignment<input id="jobName" placeholder="e.g. Smith Residence" autocomplete="off"></label>
+<div class="row"><label>Feet<input id="feet" inputmode="decimal" type="number" min="0" step="1" value="10"></label><label>Inches<input id="inches" inputmode="decimal" type="number" min="0" max="11.99" step="0.25" value="0"></label></div>
+<div class="row"><label>Area label<input id="areaLabel" value="1st Floor"></label><label>Area type<select id="areaType"><option value="gla">GLA</option><option value="nongla">Non-GLA</option></select></label></div>
+<div class="direction-grid"><button data-dir="up">↑ Up</button><button data-dir="left">← Left</button><button data-dir="right">Right →</button><button data-dir="down">↓ Down</button></div>
+<div class="row buttons"><button id="undoBtn">Undo</button><button id="closeBtn">Close Shape</button><button id="commitAreaBtn">Save Area</button></div>
+<div class="row buttons"><button id="editLastBtn">Edit Last Wall</button><button id="deleteAreaBtn">Delete Area</button><button id="clearCurrentBtn">Clear Current</button></div>
+<div class="row buttons"><button id="saveBtn">Save Job</button><button id="manageBtn">My Sketches</button></div>
+<div class="row buttons"><button id="backupBtn">Export Backup</button><label class="file-button">Restore Backup<input id="restoreInput" type="file" accept=".json,application/json" hidden></label></div>
+<div class="row buttons"><button id="exportBtn">Export PNG</button><button id="printBtn">Print / PDF</button></div>
+<div class="summary"><div><strong>Current area:</strong> <span id="currentArea">0 SF</span></div><div><strong>GLA total:</strong> <span id="glaTotal">0 SF</span></div><div><strong>Non-GLA total:</strong> <span id="nonglaTotal">0 SF</span></div></div>
+<div class="help">Tip: tap a wall in the sketch to select it. Selected walls can be edited or deleted.</div>
+</section>
+<section class="card canvas-wrap"><div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div><div id="viewport"><svg id="sketch" viewBox="0 0 1200 800" aria-label="Sketch canvas"><g id="grid"></g><g id="completedLayer"></g><g id="currentLayer"></g></svg></div></section>
+<section class="card saved-areas-card"><h2>Areas</h2><div id="areasList">No completed areas yet.</div></section>
+</main>
+<div id="modal" class="modal hidden"><div class="modal-panel"><div class="modal-head"><h2>My Sketches</h2><button id="closeModal" class="ghost">Close</button></div><div id="jobsList"></div></div></div>
+<footer>Gregory Appraisals, LLC</footer><script src="app.js"></script><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js');}</script></body></html>

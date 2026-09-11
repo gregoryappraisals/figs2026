@@ -1,9 +1,1 @@
-{
-  "name": "Gregory Sketch",
-  "short_name": "Gregory Sketch",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#111111",
-  "description": "Offline appraisal sketch tool for Gregory Appraisals, LLC"
-}
+{"name":"Gregory Sketch","short_name":"Gregory Sketch","start_url":"./index.html","display":"standalone","background_color":"#ffffff","theme_color":"#111111","description":"Offline appraisal sketch tool for Gregory Appraisals, LLC"}
