@@ -11,8 +11,90 @@ function deleteSelected(){if(!selectedWall)return alert('Select a wall or area f
 function saveJob(showAlert=true){const name=document.getElementById('jobName').value.trim();if(!name)return alert('Enter a Property / Assignment name first.');const data={version:2,name,updated:new Date().toISOString(),currentPoints,currentSegments,completedAreas};localStorage.setItem('gregorySketchJob:'+name,JSON.stringify(data));localStorage.setItem('gregorySketchLast',name);if(showAlert)alert('Saved on this device.')}function autosaveDraft(){if(document.getElementById('jobName').value.trim())saveJob(false)}
 function loadJob(name){const raw=localStorage.getItem('gregorySketchJob:'+name);if(!raw)return;const d=JSON.parse(raw);document.getElementById('jobName').value=d.name||name;currentPoints=d.currentPoints||[{...start}];currentSegments=d.currentSegments||[];completedAreas=d.completedAreas||[];selectedWall=null;localStorage.setItem('gregorySketchLast',name);render();closeModal()}
 function listJobs(){const jobs=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('gregorySketchJob:'))try{jobs.push(JSON.parse(localStorage.getItem(k)))}catch{}}jobs.sort((a,b)=>new Date(b.updated)-new Date(a.updated));jobsList.innerHTML=!jobs.length?'<p>No saved sketches yet.</p>':jobs.map(j=>`<div class="job-row"><div><strong>${escapeHtml(j.name)}</strong><div class="job-meta">${new Date(j.updated).toLocaleString()}</div></div><button data-load="${encodeURIComponent(j.name)}">Open</button><button data-delete="${encodeURIComponent(j.name)}">Delete</button></div>`).join('');document.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>loadJob(decodeURIComponent(b.dataset.load)));document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{const n=decodeURIComponent(b.dataset.delete);if(confirm(`Delete saved sketch "${n}"?`)){localStorage.removeItem('gregorySketchJob:'+n);listJobs()}});modal.classList.remove('hidden')}function closeModal(){modal.classList.add('hidden')}
+
+function translateArea(area, dx, dy){
+  area.points = area.points.map(p => ({x:p.x+dx, y:p.y+dy}));
+  area.segments = area.segments.map(s => ({
+    ...s,
+    a:{x:s.a.x+dx, y:s.a.y+dy},
+    b:{x:s.b.x+dx, y:s.b.y+dy}
+  }));
+}
+
+function beginMoveSelectedArea(){
+  if(!selectedWall || selectedWall.kind!=="area"){
+    return alert("Select a completed area first.");
+  }
+  moveMode = true;
+  moveAreaIndex = selectedWall.areaIndex;
+  dragStart = null;
+  originalAreaSnapshot = JSON.parse(JSON.stringify(completedAreas[moveAreaIndex]));
+  alert("Move mode is on. Drag the selected completed area to a new position, then release.");
+}
+
+function cancelMoveMode(){
+  moveMode = false;
+  moveAreaIndex = null;
+  dragStart = null;
+  originalAreaSnapshot = null;
+}
+
 function exportBackup(){const jobs={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('gregorySketchJob:'))jobs[k]=localStorage.getItem(k)}const blob=new Blob([JSON.stringify({version:2,exported:new Date().toISOString(),jobs},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Gregory-Sketch-Backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}async function restoreBackup(file){try{const data=JSON.parse(await file.text());if(!data.jobs)throw new Error();Object.entries(data.jobs).forEach(([k,v])=>localStorage.setItem(k,v));alert('Backup restored.')}catch{alert('That file could not be restored.')}}
 function makeExportSvg(){const clone=sketch.cloneNode(true);clone.querySelectorAll('#grid,.wall-hit').forEach(el=>el.remove());clone.querySelectorAll('.wall-selected').forEach(el=>el.classList.remove('wall-selected'));clone.setAttribute('xmlns',SVGNS);return clone}function exportPNG(){const clone=makeExportSvg(),str=new XMLSerializer().serializeToString(clone),blob=new Blob([str],{type:'image/svg+xml'}),url=URL.createObjectURL(blob),img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=1800;canvas.height=1200;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);const a=document.createElement('a');a.download=(document.getElementById('jobName').value.trim()||'Gregory-Sketch')+'.png';a.href=canvas.toDataURL('image/png');a.click()};img.src=url}
 function newJob(){if((completedAreas.length||currentSegments.length)&&!confirm('Start a new job? Unsaved work may be lost.'))return;document.getElementById('jobName').value='';currentPoints=[{...start}];currentSegments=[];completedAreas=[];selectedWall=null;render()}function setZoom(z){zoom=Math.max(.5,Math.min(2,z));sketch.style.transform=`scale(${zoom})`;sketch.style.marginRight=`${(zoom-1)*1200}px`;sketch.style.marginBottom=`${(zoom-1)*800}px`;zoomLabel.textContent=Math.round(zoom*100)+'%'}
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>addWall(b.dataset.dir));document.getElementById('undoBtn').onclick=undo;document.getElementById('closeBtn').onclick=closeShape;document.getElementById('commitAreaBtn').onclick=commitArea;document.getElementById('editLastBtn').onclick=editSelectedWall;document.getElementById('deleteAreaBtn').onclick=deleteSelected;document.getElementById('clearCurrentBtn').onclick=()=>{if(currentSegments.length&&confirm('Clear the current unfinished area?')){currentPoints=[{...start}];currentSegments=[];selectedWall=null;render();autosaveDraft()}};document.getElementById('saveBtn').onclick=()=>saveJob(true);document.getElementById('manageBtn').onclick=listJobs;document.getElementById('closeModal').onclick=closeModal;document.getElementById('backupBtn').onclick=exportBackup;document.getElementById('restoreInput').onchange=e=>e.target.files[0]&&restoreBackup(e.target.files[0]);document.getElementById('exportBtn').onclick=exportPNG;document.getElementById('printBtn').onclick=()=>window.print();document.getElementById('newJobTop').onclick=newJob;document.getElementById('zoomIn').onclick=()=>setZoom(zoom+.1);document.getElementById('zoomOut').onclick=()=>setZoom(zoom-.1);document.getElementById('resetView').onclick=()=>setZoom(1);
 (function(){const grid=document.getElementById('grid');for(let x=0;x<=1200;x+=50){const l=document.createElementNS(SVGNS,'line');l.setAttribute('x1',x);l.setAttribute('x2',x);l.setAttribute('y1',0);l.setAttribute('y2',800);l.setAttribute('stroke','#ededed');l.setAttribute('stroke-width','1');grid.appendChild(l)}for(let y=0;y<=800;y+=50){const l=document.createElementNS(SVGNS,'line');l.setAttribute('x1',0);l.setAttribute('x2',1200);l.setAttribute('y1',y);l.setAttribute('y2',y);l.setAttribute('stroke','#ededed');l.setAttribute('stroke-width','1');grid.appendChild(l)}})();const last=localStorage.getItem('gregorySketchLast');if(last&&localStorage.getItem('gregorySketchJob:'+last))loadJob(last);else render();setZoom(1);
+
+
+// Version 2.1: tap the empty grid to choose the start point.
+sketch.addEventListener("click", function(e) {
+  if (currentSegments.length > 0) return;
+  if (e.target && e.target.classList && e.target.classList.contains("wall-hit")) return;
+
+  const point = sketch.createSVGPoint();
+  point.x = e.clientX;
+  point.y = e.clientY;
+  const p = point.matrixTransform(sketch.getScreenCTM().inverse());
+
+  // Snap the chosen point to 5-foot grid increments.
+  const step = 5 * SCALE;
+  currentPoints = [{
+    x: Math.round(p.x / step) * step,
+    y: Math.round(p.y / step) * step
+  }];
+  selectedWall = null;
+  render();
+  autosaveDraft();
+});
+
+
+sketch.addEventListener("pointerdown", function(e){
+  if(!moveMode || moveAreaIndex===null) return;
+  const pt = sketch.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(sketch.getScreenCTM().inverse());
+  dragStart = {x:p.x, y:p.y};
+  originalAreaSnapshot = JSON.parse(JSON.stringify(completedAreas[moveAreaIndex]));
+  sketch.setPointerCapture?.(e.pointerId);
+  e.preventDefault();
+});
+
+sketch.addEventListener("pointermove", function(e){
+  if(!moveMode || moveAreaIndex===null || !dragStart || !originalAreaSnapshot) return;
+  const pt = sketch.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(sketch.getScreenCTM().inverse());
+
+  completedAreas[moveAreaIndex] = JSON.parse(JSON.stringify(originalAreaSnapshot));
+  translateArea(completedAreas[moveAreaIndex], p.x-dragStart.x, p.y-dragStart.y);
+  render();
+  e.preventDefault();
+});
+
+sketch.addEventListener("pointerup", function(e){
+  if(!moveMode || moveAreaIndex===null || !dragStart) return;
+  dragStart = null;
+  autosaveDraft();
+  cancelMoveMode();
+  e.preventDefault();
+});

@@ -12,7 +12,7 @@
 <div class="row buttons"><button id="backupBtn">Export Backup</button><label class="file-button">Restore Backup<input id="restoreInput" type="file" accept=".json,application/json" hidden></label></div>
 <div class="row buttons"><button id="exportBtn">Export PNG</button><button id="printBtn">Print / PDF</button></div>
 <div class="summary"><div><strong>Current area:</strong> <span id="currentArea">0 SF</span></div><div><strong>GLA total:</strong> <span id="glaTotal">0 SF</span></div><div><strong>Non-GLA total:</strong> <span id="nonglaTotal">0 SF</span></div></div>
-<div class="help">Tip: tap a wall in the sketch to select it. Selected walls can be edited or deleted.</div>
+<div class="help">Tip: before drawing a wall, tap anywhere on the grid to choose your starting point. Tap a completed area, then use Move Area to drag it.</div>
 </section>
 <section class="card canvas-wrap"><div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div><div id="viewport"><svg id="sketch" viewBox="0 0 1200 800" aria-label="Sketch canvas"><g id="grid"></g><g id="completedLayer"></g><g id="currentLayer"></g></svg></div></section>
 <section class="card saved-areas-card"><h2>Areas</h2><div id="areasList">No completed areas yet.</div></section>
