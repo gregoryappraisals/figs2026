@@ -35,3 +35,10 @@
 .details-card{max-width:950px;margin:0 auto}
 .details-card label{display:block;font-weight:700;margin-bottom:12px}
 .details-card input,.details-card select{width:100%;padding:11px;border:1px solid #bbb;border-radius:8px;margin-top:5px}
+
+.primary-sketch-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+.primary-sketch-toolbar button{padding:8px 10px;font-weight:700}
+#fieldQuickTools{display:none!important}
+#viewport{overflow:auto}
+#viewport.pan-mode{cursor:grab}
+#viewport.pan-mode.dragging{cursor:grabbing}

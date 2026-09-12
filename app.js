@@ -238,3 +238,44 @@ const _loadJobForDetails = loadJob;
 loadJob = function(name){ _loadJobForDetails(name); syncDetailsFromCore(); };
 
 syncDetailsFromCore();
+
+// V3.3 field toolbar, pan and fit
+(function(){
+ const viewport=document.getElementById("viewport"), svg=document.getElementById("sketch");
+ if(!viewport||!svg) return;
+ const undo=document.getElementById("undoBtn");
+ const newStart=document.getElementById("newStartBtn");
+ const close=document.getElementById("closeBtn")||document.getElementById("closeAreaBtn");
+ toolbarUndo.onclick=()=>undo&&undo.click();
+ toolbarNewStart.onclick=()=>newStart&&newStart.click();
+ toolbarClose.onclick=()=>{if(close)close.click(); else if(typeof closeShape==="function")closeShape();};
+ toolbarLabel.onclick=()=>quickLabelBtn&&quickLabelBtn.click();
+ toolbarSymbol.onclick=()=>quickSymbolBtn&&quickSymbolBtn.click();
+
+ let pan=false, drag=false, sx=0, sy=0, sl=0, st=0;
+ toolbarPan.onclick=()=>{pan=!pan;viewport.classList.toggle("pan-mode",pan);toolbarPan.textContent=pan?"✓ Pan On":"✋ Pan";};
+ viewport.addEventListener("pointerdown",e=>{
+   if(!pan)return;
+   drag=true;viewport.classList.add("dragging");sx=e.clientX;sy=e.clientY;sl=viewport.scrollLeft;st=viewport.scrollTop;
+   try{viewport.setPointerCapture(e.pointerId)}catch(_){}
+   e.preventDefault();
+ },true);
+ viewport.addEventListener("pointermove",e=>{
+   if(!pan||!drag)return;
+   viewport.scrollLeft=sl-(e.clientX-sx);viewport.scrollTop=st-(e.clientY-sy);e.preventDefault();
+ },true);
+ function stop(){drag=false;viewport.classList.remove("dragging")}
+ viewport.addEventListener("pointerup",stop,true);viewport.addEventListener("pointercancel",stop,true);
+
+ toolbarFit.onclick=()=>{
+   const groups=["completedLayer","currentLayer","annotationLayer","markerLayer"].map(id=>document.getElementById(id)).filter(Boolean);
+   let box=null;
+   groups.forEach(g=>{try{const b=g.getBBox();if(!b.width&&!b.height)return;
+     if(!box)box={x:b.x,y:b.y,x2:b.x+b.width,y2:b.y+b.height};
+     else{box.x=Math.min(box.x,b.x);box.y=Math.min(box.y,b.y);box.x2=Math.max(box.x2,b.x+b.width);box.y2=Math.max(box.y2,b.y+b.height);}
+   }catch(_){}}); 
+   if(!box){svg.setAttribute("viewBox","0 0 1200 800");return;}
+   const p=80; svg.setAttribute("viewBox",`${box.x-p} ${box.y-p} ${box.x2-box.x+p*2} ${box.y2-box.y+p*2}`);
+   viewport.scrollLeft=0;viewport.scrollTop=0;
+ };
+})();
