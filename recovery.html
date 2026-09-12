@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Gregory Sketch Recovery</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:900px;margin:auto;padding:22px;background:#f5f5f7;color:#111}
+.card{background:white;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px #0001}
+button{font-size:17px;padding:12px 16px;margin:5px;border:0;border-radius:9px;background:#222;color:white}
+button.secondary{background:#666}
+pre{white-space:pre-wrap;word-break:break-word;background:#eee;padding:12px;border-radius:8px;max-height:350px;overflow:auto}
+.good{color:#176b2c}.warn{color:#9b5200}
+</style>
+</head>
+<body>
+<h1>Gregory Sketch Recovery</h1>
+<p>This page only reads browser storage. It does not delete or overwrite anything.</p>
+<div class="card">
+<button id="scan">Scan for Gregory Sketch Data</button>
+<button id="download" class="secondary" disabled>Download Everything Found</button>
+<div id="status"></div>
+</div>
+<div id="results"></div>
+<script>
+let found={};
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+document.getElementById("scan").onclick=()=>{
+ found={};
+ const keys=[];
+ for(let i=0;i<localStorage.length;i++){
+   const k=localStorage.key(i);
+   if(k && k.toLowerCase().includes("gregorysketch")){
+     found[k]=localStorage.getItem(k);
+     keys.push(k);
+   }
+ }
+ const status=document.getElementById("status"), results=document.getElementById("results");
+ results.innerHTML="";
+ if(!keys.length){
+   status.innerHTML='<p class="warn"><strong>No Gregory Sketch keys were found in localStorage on this browser/origin.</strong></p>';
+   document.getElementById("download").disabled=true;
+   return;
+ }
+ status.innerHTML='<p class="good"><strong>Found '+keys.length+' Gregory Sketch storage record(s).</strong> Download a copy before doing anything else.</p>';
+ document.getElementById("download").disabled=false;
+ keys.forEach(k=>{
+   let val=found[k], summary="";
+   try{
+     const o=JSON.parse(val);
+     summary=JSON.stringify(o,null,2);
+   }catch(e){summary=val;}
+   const card=document.createElement("div");
+   card.className="card";
+   card.innerHTML="<h3>"+esc(k)+"</h3><pre>"+esc(summary)+"</pre>";
+   results.appendChild(card);
+ });
+};
+document.getElementById("download").onclick=()=>{
+ const payload={
+   recoveryExport:"Gregory Sketch browser-storage recovery",
+   exportedAt:new Date().toISOString(),
+   origin:location.origin,
+   records:found
+ };
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="Gregory_Sketch_Recovery_"+new Date().toISOString().slice(0,10)+".json";
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+</script>
+</body>
+</html>
