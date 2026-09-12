@@ -188,3 +188,53 @@ document.querySelectorAll("[data-key]").forEach(b=>b.onclick=()=>{let k=b.datase
 document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()=>{fieldKeyValue="";fieldKeyUpdate();}));
 quickLabelBtn.onclick=()=>{let t=prompt("Room label (Living, Kitchen, Bedroom, Bath, Dining, Laundry, Office, Garage, etc.):");if(t&&t.trim()){window.pendingRoom=t.trim();setMode("room","PLACE ROOM LABEL: tap where the room sits on the sketch.");}};
 quickSymbolBtn.onclick=()=>{let t=prompt("Symbol: car, truck, garage, stairs, or fireplace","car");if(t){t=t.trim().toLowerCase();if(["car","truck","garage","stairs","fireplace"].includes(t)){window.pendingSymbol=t;setMode("symbol","PLACE SYMBOL: tap where you want it on the sketch.");}else alert("Choose car, truck, garage, stairs, or fireplace.");}};
+
+
+// V3.2 corrected: DETAILS tab syncs with the app's existing job controls.
+const detailsJobName = document.getElementById("detailsJobName");
+const detailsAreaType = document.getElementById("detailsAreaType");
+const detailsAreaLabel = document.getElementById("detailsAreaLabel");
+const detailsCurrentArea = document.getElementById("detailsCurrentArea");
+const detailsGlaTotal = document.getElementById("detailsGlaTotal");
+const detailsNonglaTotal = document.getElementById("detailsNonglaTotal");
+const detailsAreasList = document.getElementById("detailsAreasList");
+
+function syncDetailsFromCore(){
+  if(!detailsJobName) return;
+  detailsJobName.value = jobName.value || "";
+  detailsAreaType.value = areaType.value || "gla";
+  detailsAreaLabel.value = areaLabel.value || "1st Floor";
+  detailsCurrentArea.textContent = currentArea.textContent;
+  detailsGlaTotal.textContent = glaTotal.textContent;
+  detailsNonglaTotal.textContent = nonglaTotal.textContent;
+  detailsAreasList.innerHTML = areasList.innerHTML;
+  detailsAreasList.querySelectorAll("[data-area]").forEach(b=>{
+    b.onclick=()=>{
+      selected={kind:"area",areaIndex:+b.dataset.area,index:0};
+      render();
+    };
+  });
+}
+function syncCoreFromDetails(){
+  jobName.value = detailsJobName.value;
+  areaType.value = detailsAreaType.value;
+  areaLabel.value = detailsAreaLabel.value;
+}
+detailsJobName.addEventListener("input",()=>{jobName.value=detailsJobName.value;});
+detailsAreaType.addEventListener("change",()=>{areaType.value=detailsAreaType.value;autosave();});
+detailsAreaLabel.addEventListener("input",()=>{areaLabel.value=detailsAreaLabel.value;autosave();});
+
+document.getElementById("detailsSaveBtn").onclick=()=>{syncCoreFromDetails();saveJob(true);syncDetailsFromCore();};
+document.getElementById("detailsManageBtn").onclick=()=>{syncCoreFromDetails();listJobs();};
+document.getElementById("detailsBackupBtn").onclick=exportBackup;
+document.getElementById("detailsRestoreInput").onchange=e=>e.target.files[0]&&restoreBackup(e.target.files[0]);
+document.getElementById("detailsExportBtn").onclick=exportPNG;
+document.getElementById("detailsPrintBtn").onclick=()=>window.print();
+
+const _renderForDetails = render;
+render = function(){ _renderForDetails(); syncDetailsFromCore(); };
+
+const _loadJobForDetails = loadJob;
+loadJob = function(name){ _loadJobForDetails(name); syncDetailsFromCore(); };
+
+syncDetailsFromCore();

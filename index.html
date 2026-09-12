@@ -16,11 +16,55 @@
 </header>
 
 <nav class="tabs">
+  <button class="tab" data-tab="detailsTab">DETAILS</button>
   <button class="tab active" data-tab="sketchTab">SKETCH</button>
   <button class="tab" data-tab="notesTab">NOTES</button>
 </nav>
 
 <main>
+
+<section id="detailsTab" class="tab-page">
+  <section class="card details-card">
+    <h2>Assignment Details</h2>
+    <label>Property / Assignment
+      <input id="detailsJobName" placeholder="Enter property address or assignment name" autocomplete="off">
+    </label>
+    <div class="row">
+      <label>Area type
+        <select id="detailsAreaType">
+          <option value="gla">GLA</option>
+          <option value="nongla">Non-GLA</option>
+        </select>
+      </label>
+      <label>Area label
+        <input id="detailsAreaLabel" value="1st Floor">
+      </label>
+    </div>
+
+    <div class="summary">
+      <div><strong>Current area:</strong> <span id="detailsCurrentArea">0 SF</span></div>
+      <div><strong>GLA total:</strong> <span id="detailsGlaTotal">0 SF</span></div>
+      <div><strong>Non-GLA total:</strong> <span id="detailsNonglaTotal">0 SF</span></div>
+    </div>
+
+    <div class="row buttons">
+      <button id="detailsSaveBtn">Save Job</button>
+      <button id="detailsManageBtn">My Sketches</button>
+      <button id="detailsBackupBtn">Export Backup</button>
+      <label class="file-button">Restore Backup
+        <input id="detailsRestoreInput" type="file" accept=".json,application/json" hidden>
+      </label>
+    </div>
+    <div class="row buttons">
+      <button id="detailsExportBtn">Export PNG</button>
+      <button id="detailsPrintBtn">Print / PDF</button>
+    </div>
+
+    <h3>Completed Areas</h3>
+    <div id="detailsAreasList">No completed areas yet.</div>
+  </section>
+</section>
+
 <section id="sketchTab" class="tab-page active">
   <section class="card controls">
     <label>Property / Assignment
