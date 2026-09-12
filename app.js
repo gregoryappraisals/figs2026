@@ -238,3 +238,59 @@ const _loadJobForDetails = loadJob;
 loadJob = function(name){ _loadJobForDetails(name); syncDetailsFromCore(); };
 
 syncDetailsFromCore();
+
+
+// VERIFIED V3.2 DETAILS TAB
+const detailsJobName = document.getElementById("detailsJobName");
+const detailsAreaType = document.getElementById("detailsAreaType");
+const detailsAreaLabel = document.getElementById("detailsAreaLabel");
+const detailsCurrentArea = document.getElementById("detailsCurrentArea");
+const detailsGlaTotal = document.getElementById("detailsGlaTotal");
+const detailsNonglaTotal = document.getElementById("detailsNonglaTotal");
+const detailsAreasList = document.getElementById("detailsAreasList");
+
+function syncDetailsFromCore(){
+  if(!detailsJobName) return;
+  detailsJobName.value = jobName.value || "";
+  detailsAreaType.value = areaType.value || "gla";
+  detailsAreaLabel.value = areaLabel.value || "1st Floor";
+  detailsCurrentArea.textContent = currentArea.textContent;
+  detailsGlaTotal.textContent = glaTotal.textContent;
+  detailsNonglaTotal.textContent = nonglaTotal.textContent;
+  detailsAreasList.innerHTML = areasList.innerHTML;
+}
+
+function syncCoreFromDetails(){
+  jobName.value = detailsJobName.value;
+  areaType.value = detailsAreaType.value;
+  areaLabel.value = detailsAreaLabel.value;
+}
+
+detailsJobName.addEventListener("input", syncCoreFromDetails);
+detailsAreaType.addEventListener("change", ()=>{syncCoreFromDetails(); autosave();});
+detailsAreaLabel.addEventListener("input", ()=>{syncCoreFromDetails(); autosave();});
+
+document.getElementById("detailsSaveBtn").onclick = ()=>{syncCoreFromDetails(); saveJob(true); syncDetailsFromCore();};
+document.getElementById("detailsManageBtn").onclick = ()=>{syncCoreFromDetails(); listJobs();};
+document.getElementById("detailsBackupBtn").onclick = exportBackup;
+document.getElementById("detailsRestoreInput").onchange = e=>e.target.files[0] && restoreBackup(e.target.files[0]);
+document.getElementById("detailsExportBtn").onclick = exportPNG;
+document.getElementById("detailsPrintBtn").onclick = ()=>window.print();
+
+document.querySelectorAll(".tab").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".tab-page").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById(b.dataset.tab).classList.add("active");
+    if(b.dataset.tab==="detailsTab") syncDetailsFromCore();
+  };
+});
+
+const originalRenderVerified = render;
+render = function(){
+  originalRenderVerified();
+  syncDetailsFromCore();
+};
+
+syncDetailsFromCore();

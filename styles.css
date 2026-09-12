@@ -30,3 +30,8 @@
 #sketchTab .controls > .row.buttons:nth-last-of-type(-n+2){
   display:none!important;
 }
+
+/* VERIFIED DETAILS TAB */
+.details-card{max-width:950px;margin:0 auto}
+.details-card label{display:block;font-weight:700;margin-bottom:12px}
+.details-card input,.details-card select{width:100%;padding:11px;border:1px solid #bbb;border-radius:8px;margin-top:5px}
