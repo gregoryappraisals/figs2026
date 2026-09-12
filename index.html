@@ -38,7 +38,14 @@
 
     <label>Area label<input id="areaLabel" value="1st Floor"></label>
 
-    <div class="direction-grid eight">
+    <div class="field-keypad">
+<div id="fieldMeasureDisplay">0</div>
+<div class="number-pad">
+<button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+<button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+<button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+<button data-key="0">0</button><button data-key=".">.</button><button data-key="del">DEL</button>
+</div></div><div class="direction-grid eight">
       <button data-dir="upleft" aria-label="Up left">↖</button>
       <button data-dir="up" aria-label="Up">↑</button>
       <button data-dir="upright" aria-label="Up right">↗</button>
@@ -106,7 +113,9 @@
   </section>
 
   <section class="card canvas-wrap">
-    <div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div>
+    <div id="fieldQuickTools" class="field-quick-tools">
+<button id="quickLabelBtn">T Label</button><button id="quickSymbolBtn">▣ Symbols</button>
+</div><div class="canvas-toolbar"><button id="zoomOut">−</button><span id="zoomLabel">100%</span><button id="zoomIn">+</button><button id="resetView">Reset View</button></div>
     <div id="viewport"><svg id="sketch" viewBox="0 0 1200 800" aria-label="Sketch canvas">
       <g id="grid"></g><g id="completedLayer"></g><g id="currentLayer"></g><g id="annotationLayer"></g><g id="markerLayer"></g>
     </svg></div>

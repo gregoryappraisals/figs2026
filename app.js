@@ -180,3 +180,11 @@ jobName.addEventListener("change",autosave);
 
 (function(){let g=document.getElementById("grid");for(let x=0;x<=1200;x+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:x,x2:x,y1:0,y2:800,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}for(let y=0;y<=800;y+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:0,x2:1200,y1:y,y2:y,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}})();
 let last=localStorage.getItem("gregorySketchLast");if(last&&localStorage.getItem("gregorySketchJob:"+last))loadJob(last);else{fillNotes();render()}setZoom(1);
+
+// V3.2 tablet keypad and quick placement tools
+let fieldKeyValue="";
+function fieldKeyUpdate(){measurement.value=fieldKeyValue;fieldMeasureDisplay.textContent=fieldKeyValue||"0";}
+document.querySelectorAll("[data-key]").forEach(b=>b.onclick=()=>{let k=b.dataset.key;if(k==="del")fieldKeyValue=fieldKeyValue.slice(0,-1);else if(k==="."&&fieldKeyValue.includes("."))return;else fieldKeyValue+=k;fieldKeyUpdate();});
+document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()=>{fieldKeyValue="";fieldKeyUpdate();}));
+quickLabelBtn.onclick=()=>{let t=prompt("Room label (Living, Kitchen, Bedroom, Bath, Dining, Laundry, Office, Garage, etc.):");if(t&&t.trim()){window.pendingRoom=t.trim();setMode("room","PLACE ROOM LABEL: tap where the room sits on the sketch.");}};
+quickSymbolBtn.onclick=()=>{let t=prompt("Symbol: car, truck, garage, stairs, or fireplace","car");if(t){t=t.trim().toLowerCase();if(["car","truck","garage","stairs","fireplace"].includes(t)){window.pendingSymbol=t;setMode("symbol","PLACE SYMBOL: tap where you want it on the sketch.");}else alert("Choose car, truck, garage, stairs, or fireplace.");}};
