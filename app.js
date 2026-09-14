@@ -89,11 +89,49 @@ function renderArea(a,idx){
 }
 function svgPoint(e){const q=sketch.createSVGPoint();q.x=e.clientX;q.y=e.clientY;return q.matrixTransform(sketch.getScreenCTM().inverse())}
 function snapPoint(p){return {x:Math.round(p.x/SNAP)*SNAP,y:Math.round(p.y/SNAP)*SNAP}}
+function svgEl(tag,attrs={}){const e=document.createElementNS(SVGNS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e}
+function symbolLine(g,x1,y1,x2,y2,cls="symbol-stroke"){g.appendChild(svgEl("line",{x1,y1,x2,y2,class:cls}))}
+function symbolRect(g,x,y,w,h,rx=0,cls="symbol-stroke"){g.appendChild(svgEl("rect",{x,y,width:w,height:h,rx,class:cls}))}
+function symbolPath(g,d,cls="symbol-stroke"){g.appendChild(svgEl("path",{d,class:cls}))}
+function symbolEllipse(g,cx,cy,rx,ry,cls="symbol-stroke"){g.appendChild(svgEl("ellipse",{cx,cy,rx,ry,class:cls}))}
+function addArrow(g,x1,y1,x2,y2){symbolLine(g,x1,y1,x2,y2);const a=Math.atan2(y2-y1,x2-x1),l=8;symbolLine(g,x2,y2,x2-Math.cos(a-.55)*l,y2-Math.sin(a-.55)*l);symbolLine(g,x2,y2,x2-Math.cos(a+.55)*l,y2-Math.sin(a+.55)*l)}
+function buildArchitecturalSymbol(type){
+ const g=svgEl("g",{class:"architect-symbol"});
+ if(type==="car"||type==="suv"||type==="pickup"){
+   const w=type==="car"?34:40,h=type==="car"?70:76;
+   symbolPath(g,`M ${-w/2+5} ${-h/2} Q ${-w/2} ${-h/2+8} ${-w/2} ${-h/2+18} L ${-w/2} ${h/2-18} Q ${-w/2} ${h/2-8} ${-w/2+5} ${h/2} L ${w/2-5} ${h/2} Q ${w/2} ${h/2-8} ${w/2} ${h/2-18} L ${w/2} ${-h/2+18} Q ${w/2} ${-h/2+8} ${w/2-5} ${-h/2} Z`);
+   symbolLine(g,-w/2+5,-h/2+20,w/2-5,-h/2+20);symbolLine(g,-w/2+5,h/2-20,w/2-5,h/2-20);
+   if(type==="car"){symbolPath(g,`M ${-w/2+6} -12 Q 0 -21 ${w/2-6} -12 L ${w/2-6} 12 Q 0 21 ${-w/2+6} 12 Z`)}
+   if(type==="suv"){symbolRect(g,-w/2+6,-13,w-12,26,7)}
+   if(type==="pickup"){symbolRect(g,-w/2+6,-h/2+24,w-12,24,5);symbolRect(g,-w/2+5,8,w-10,h/2-15,2);symbolLine(g,-w/2+5,8,w/2-5,8)}
+   [-1,1].forEach(side=>{symbolRect(g,side*(w/2+1)-3,-h/2+13,6,15,2,"symbol-wheel");symbolRect(g,side*(w/2+1)-3,h/2-28,6,15,2,"symbol-wheel")});
+ } else if(type==="door"){
+   symbolLine(g,0,-30,0,30);symbolLine(g,0,30,38,30);symbolPath(g,"M 0 -8 A 38 38 0 0 1 38 30","symbol-arc");
+ } else if(type==="double-door"){
+   symbolLine(g,-42,0,42,0);symbolLine(g,-42,0,-42,34);symbolLine(g,42,0,42,34);symbolLine(g,-42,0,0,34);symbolLine(g,42,0,0,34);symbolPath(g,"M -42 0 A 42 42 0 0 0 0 42","symbol-arc");symbolPath(g,"M 42 0 A 42 42 0 0 1 0 42","symbol-arc");
+ } else if(type==="window"){
+   symbolLine(g,-42,-6,42,-6);symbolLine(g,-42,6,42,6);symbolLine(g,-34,-12,-34,12);symbolLine(g,34,-12,34,12);
+ } else if(type==="garage"){
+   symbolRect(g,-45,-30,90,60,2);for(let y=-18;y<=18;y+=12)symbolLine(g,-43,y,43,y);symbolLine(g,-30,-28,-30,28);symbolLine(g,30,-28,30,28);
+ } else if(type==="stairs-up"||type==="stairs-down"){
+   symbolRect(g,-34,-40,68,80,0);for(let y=-30;y<=30;y+=10)symbolLine(g,-34,y,34,y);if(type==="stairs-up")addArrow(g,0,30,0,-30);else addArrow(g,0,-30,0,30);
+ } else if(type==="fireplace"){
+   symbolRect(g,-38,-26,76,52,0);symbolLine(g,-28,-16,28,-16);symbolPath(g,"M -18 18 Q -26 2 -11 -5 Q -6 7 0 -8 Q 8 0 13 -10 Q 28 5 18 18 Z");
+ } else if(type==="sink"){
+   symbolRect(g,-34,-25,68,50,7);symbolEllipse(g,0,2,20,15);symbolEllipse(g,0,-15,2.5,2.5);symbolLine(g,0,-13,0,-6);
+ } else if(type==="toilet"){
+   symbolRect(g,-20,-34,40,20,6);symbolEllipse(g,0,8,22,30);symbolEllipse(g,0,8,13,20);symbolEllipse(g,0,-24,2.5,2.5);
+ } else if(type==="tub"){
+   symbolRect(g,-45,-24,90,48,10);symbolRect(g,-36,-16,72,32,8);symbolEllipse(g,31,-12,3,3);symbolLine(g,26,-12,18,-12);
+ } else {
+   symbolEllipse(g,0,0,18,18);
+ }
+ return g;
+}
 function renderAnnotations(){
  annotationLayer.innerHTML="";
  roomLabels.forEach((r,i)=>{let t=document.createElementNS(SVGNS,"text");t.setAttribute("x",r.x);t.setAttribute("y",r.y);t.setAttribute("class","room-label");t.textContent=r.text;t.dataset.ann="room";t.dataset.index=i;annotationLayer.appendChild(t)});
- const glyph={car:"🚗",truck:"🚙",garage:"▥",stairs:"⇅",fireplace:"▣"};
- symbols.forEach((s,i)=>{let t=document.createElementNS(SVGNS,"text");t.setAttribute("x",s.x);t.setAttribute("y",s.y);t.setAttribute("class","symbol-label");t.textContent=glyph[s.type]||"●";t.dataset.ann="symbol";t.dataset.index=i;annotationLayer.appendChild(t)});
+ symbols.forEach((s,i)=>{const g=buildArchitecturalSymbol(s.type);g.setAttribute("transform",`translate(${s.x} ${s.y}) rotate(${s.rotation||0}) scale(${s.scale||1})`);g.dataset.ann="symbol";g.dataset.index=i;if(selected?.kind==="symbol"&&selected.index===i)g.classList.add("symbol-selected");g.querySelectorAll("*").forEach(n=>n.style.pointerEvents="none");annotationLayer.appendChild(g)});
 }
 function renderMarker(){
  markerLayer.innerHTML="";let c=document.createElementNS(SVGNS,"circle");c.setAttribute("cx",cursor.x);c.setAttribute("cy",cursor.y);c.setAttribute("r",10);c.setAttribute("class","active-marker");markerLayer.appendChild(c);
@@ -153,11 +191,11 @@ sketch.addEventListener("click",e=>{
  let p=snapPoint(svgPoint(e));
  if(mode==="newstart"||(!currentSegments.length&&mode==="normal")){cursor=p;setMode("normal","Starting point set. The bright marker shows where the next wall begins.");render();autosave();return}
  if(mode==="room"){roomLabels.push({id:uid(),text:window.pendingRoom,x:p.x,y:p.y});setMode("normal","Room label placed.");render();autosave();return}
- if(mode==="symbol"){symbols.push({id:uid(),type:window.pendingSymbol,x:p.x,y:p.y});setMode("normal","Symbol placed.");render();autosave();return}
+ if(mode==="symbol"){symbols.push({id:uid(),type:window.pendingSymbol,x:p.x,y:p.y,rotation:0,scale:1});setMode("normal","Symbol placed.");render();autosave();return}
 });
 sketch.addEventListener("pointerdown",e=>{
  if(mode==="movearea"&&selected?.kind==="area"){let p=svgPoint(e);drag={kind:"area",index:selected.areaIndex,start:p,snapshot:JSON.parse(JSON.stringify(completedAreas[selected.areaIndex]))};e.preventDefault();return}
- if(e.target.dataset.ann){let p=svgPoint(e);drag={kind:e.target.dataset.ann,index:+e.target.dataset.index,start:p};e.preventDefault()}
+ if(e.target.dataset.ann){let p=svgPoint(e),kind=e.target.dataset.ann,index=+e.target.dataset.index;if(kind==="symbol")selected={kind:"symbol",index};drag={kind,index,start:p};render();e.preventDefault()}
 });
 sketch.addEventListener("pointermove",e=>{
  if(!drag)return;let p=svgPoint(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y;
@@ -187,7 +225,18 @@ function fieldKeyUpdate(){measurement.value=fieldKeyValue;fieldMeasureDisplay.te
 document.querySelectorAll("[data-key]").forEach(b=>b.onclick=()=>{let k=b.dataset.key;if(k==="del")fieldKeyValue=fieldKeyValue.slice(0,-1);else if(k==="."&&fieldKeyValue.includes("."))return;else fieldKeyValue+=k;fieldKeyUpdate();});
 document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()=>{fieldKeyValue="";fieldKeyUpdate();}));
 quickLabelBtn.onclick=()=>{let t=prompt("Room label (Living, Kitchen, Bedroom, Bath, Dining, Laundry, Office, Garage, etc.):");if(t&&t.trim()){window.pendingRoom=t.trim();setMode("room","PLACE ROOM LABEL: tap where the room sits on the sketch.");}};
-quickSymbolBtn.onclick=()=>{let t=prompt("Symbol: car, truck, garage, stairs, or fireplace","car");if(t){t=t.trim().toLowerCase();if(["car","truck","garage","stairs","fireplace"].includes(t)){window.pendingSymbol=t;setMode("symbol","PLACE SYMBOL: tap where you want it on the sketch.");}else alert("Choose car, truck, garage, stairs, or fireplace.");}};
+const symbolModal=document.getElementById("symbolModal");
+function openSymbolPicker(){symbolModal.classList.remove("hidden")}
+function closeSymbolPicker(){symbolModal.classList.add("hidden")}
+quickSymbolBtn.onclick=openSymbolPicker;
+document.getElementById("closeSymbolModal").onclick=closeSymbolPicker;
+document.querySelectorAll("[data-symbol-pick]").forEach(b=>b.onclick=()=>{placeSymbol(b.dataset.symbolPick);closeSymbolPicker()});
+function rotateSelectedSymbol(){if(!selected||selected.kind!=="symbol"||!symbols[selected.index])return alert("Tap a placed symbol first.");symbols[selected.index].rotation=((symbols[selected.index].rotation||0)+90)%360;render();autosave()}
+function deleteSelectedSymbol(){if(!selected||selected.kind!=="symbol"||!symbols[selected.index])return alert("Tap a placed symbol first.");if(confirm("Delete the selected symbol?")){symbols.splice(selected.index,1);selected=null;render();autosave()}}
+["rotateSymbolBtn","modalRotateSymbolBtn"].forEach(id=>{const b=document.getElementById(id);if(b)b.onclick=rotateSelectedSymbol});
+["deleteSymbolBtn","modalDeleteSymbolBtn"].forEach(id=>{const b=document.getElementById(id);if(b)b.onclick=deleteSelectedSymbol});
+function renderSymbolPreviews(){document.querySelectorAll("[data-preview]").forEach(host=>{host.innerHTML="";const svg=svgEl("svg",{viewBox:"-55 -55 110 110","aria-hidden":"true"});svg.appendChild(buildArchitecturalSymbol(host.dataset.preview));host.appendChild(svg)})}
+renderSymbolPreviews();
 
 
 // V3.2 corrected: DETAILS tab syncs with the app's existing job controls.

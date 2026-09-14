@@ -42,3 +42,18 @@
 #viewport{overflow:auto}
 #viewport.pan-mode{cursor:grab}
 #viewport.pan-mode.dragging{cursor:grabbing}
+
+/* V3.3.1 architectural symbol library */
+.architect-symbol{cursor:move;transform-box:fill-box;transform-origin:center;}
+.architect-symbol .symbol-stroke{fill:none;stroke:#111;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.architect-symbol .symbol-arc{fill:none;stroke:#555;stroke-width:1.7;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+.architect-symbol .symbol-wheel{fill:#111;stroke:#111;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.architect-symbol.symbol-selected{filter:drop-shadow(0 0 3px rgba(200,0,0,.75))}
+.architect-symbol.symbol-selected .symbol-stroke,.architect-symbol.symbol-selected .symbol-arc{stroke:#c00}
+.symbol-actions{margin-top:8px}.symbol-actions button{font-size:12px;padding:8px}
+.symbol-panel{width:min(860px,94vw)}
+.symbol-picker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.symbol-picker-grid>button{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:120px;background:#fff}
+.symbol-preview{width:88px;height:76px;display:block}
+.symbol-preview svg{width:100%;height:100%;overflow:visible}
+@media (orientation:landscape) and (min-width:800px){.symbol-picker-grid{grid-template-columns:repeat(5,1fr)}.symbol-picker-grid>button{min-height:105px;padding:6px}.symbol-preview{height:62px}}

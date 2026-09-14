@@ -136,13 +136,25 @@
     </div>
 
     <div class="tool-box">
-      <strong>Symbols / objects</strong>
+      <strong>Architectural symbols</strong>
       <div class="symbol-row">
-        <button data-symbol="car">🚗 Car</button>
-        <button data-symbol="truck">🚙 SUV/Truck</button>
-        <button data-symbol="garage">▥ Garage Door</button>
-        <button data-symbol="stairs">⇅ Stairs</button>
-        <button data-symbol="fireplace">▣ Fireplace</button>
+        <button data-symbol="car">Car</button>
+        <button data-symbol="suv">SUV</button>
+        <button data-symbol="pickup">Pickup</button>
+        <button data-symbol="door">Door</button>
+        <button data-symbol="double-door">Double Door</button>
+        <button data-symbol="window">Window</button>
+        <button data-symbol="garage">Garage Door</button>
+        <button data-symbol="stairs-up">Stairs Up</button>
+        <button data-symbol="stairs-down">Stairs Down</button>
+        <button data-symbol="fireplace">Fireplace</button>
+        <button data-symbol="sink">Sink</button>
+        <button data-symbol="toilet">Toilet</button>
+        <button data-symbol="tub">Tub</button>
+      </div>
+      <div class="row buttons symbol-actions">
+        <button id="rotateSymbolBtn">Rotate Selected 90°</button>
+        <button id="deleteSymbolBtn">Delete Selected Symbol</button>
       </div>
     </div>
 
@@ -193,6 +205,26 @@
   </section>
 </section>
 </main>
+
+<div id="symbolModal" class="modal hidden"><div class="modal-panel symbol-panel"><div class="modal-head"><h2>Architectural Symbols</h2><button id="closeSymbolModal" class="ghost">Close</button></div>
+  <p class="help">Choose a symbol, then tap the sketch to place it. Symbols do not affect area calculations.</p>
+  <div class="symbol-picker-grid">
+    <button data-symbol-pick="car"><span class="symbol-preview" data-preview="car"></span><span>Car</span></button>
+    <button data-symbol-pick="suv"><span class="symbol-preview" data-preview="suv"></span><span>SUV</span></button>
+    <button data-symbol-pick="pickup"><span class="symbol-preview" data-preview="pickup"></span><span>Pickup</span></button>
+    <button data-symbol-pick="door"><span class="symbol-preview" data-preview="door"></span><span>Door</span></button>
+    <button data-symbol-pick="double-door"><span class="symbol-preview" data-preview="double-door"></span><span>Double Door</span></button>
+    <button data-symbol-pick="window"><span class="symbol-preview" data-preview="window"></span><span>Window</span></button>
+    <button data-symbol-pick="garage"><span class="symbol-preview" data-preview="garage"></span><span>Garage Door</span></button>
+    <button data-symbol-pick="stairs-up"><span class="symbol-preview" data-preview="stairs-up"></span><span>Stairs Up</span></button>
+    <button data-symbol-pick="stairs-down"><span class="symbol-preview" data-preview="stairs-down"></span><span>Stairs Down</span></button>
+    <button data-symbol-pick="fireplace"><span class="symbol-preview" data-preview="fireplace"></span><span>Fireplace</span></button>
+    <button data-symbol-pick="sink"><span class="symbol-preview" data-preview="sink"></span><span>Sink</span></button>
+    <button data-symbol-pick="toilet"><span class="symbol-preview" data-preview="toilet"></span><span>Toilet</span></button>
+    <button data-symbol-pick="tub"><span class="symbol-preview" data-preview="tub"></span><span>Tub</span></button>
+  </div>
+  <div class="row buttons"><button id="modalRotateSymbolBtn">Rotate Selected 90°</button><button id="modalDeleteSymbolBtn">Delete Selected Symbol</button></div>
+</div></div>
 
 <div id="modal" class="modal hidden"><div class="modal-panel"><div class="modal-head"><h2>My Sketches</h2><button id="closeModal" class="ghost">Close</button></div><div id="jobsList"></div></div></div>
 <footer>Gregory Appraisals, LLC</footer>
