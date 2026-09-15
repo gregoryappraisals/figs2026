@@ -57,3 +57,9 @@
 .symbol-preview{width:88px;height:76px;display:block}
 .symbol-preview svg{width:100%;height:100%;overflow:visible}
 @media (orientation:landscape) and (min-width:800px){.symbol-picker-grid{grid-template-columns:repeat(5,1fr)}.symbol-picker-grid>button{min-height:105px;padding:6px}.symbol-preview{height:62px}}
+
+/* V3.3.4 grid, movable dimensions, rotatable labels */
+.dim-text{cursor:move;pointer-events:all}
+.dim-text.dim-selected{fill:#c00;stroke:#fff}
+.room-label-selected{fill:#c00}
+#grid{pointer-events:none}

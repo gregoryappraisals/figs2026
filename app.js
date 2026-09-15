@@ -98,7 +98,8 @@ function renderWall(group,s,ref){
  line.setAttribute("class","wall-line"+(selected&&JSON.stringify(selected)===JSON.stringify(ref)?" wall-selected":""));group.appendChild(line);
  const hit=line.cloneNode();hit.setAttribute("class","wall-hit");hit.onclick=e=>{e.stopPropagation();selected=ref;render()};group.appendChild(hit);
  const mx=(s.a.x+s.b.x)/2,my=(s.a.y+s.b.y)/2,dx=s.b.x-s.a.x,dy=s.b.y-s.a.y,L=Math.hypot(dx,dy)||1;
- const t=document.createElementNS(SVGNS,"text");t.setAttribute("x",mx-dy/L*17);t.setAttribute("y",my+dx/L*17);t.setAttribute("class","dim-text");t.setAttribute("text-anchor","middle");t.textContent=fmtFeet(s.lengthFt);group.appendChild(t);
+ const baseX=mx-dy/L*17,baseY=my+dx/L*17;
+ const t=document.createElementNS(SVGNS,"text");t.setAttribute("x",baseX+(s.dimDx||0));t.setAttribute("y",baseY+(s.dimDy||0));t.setAttribute("class","dim-text"+(selected&&selected.kind==="dimension"&&selected.segment===s?" dim-selected":""));t.setAttribute("text-anchor","middle");t.textContent=fmtFeet(s.lengthFt);t.dataset.dim="1";t._segmentRef=s;group.appendChild(t);
 }
 function renderArea(a,idx){
  const p=document.createElementNS(SVGNS,"polygon");p.setAttribute("points",a.points.map(q=>q.x+","+q.y).join(" "));p.setAttribute("class","area-outline "+(a.type==="gla"?"area-fill-gla":"area-fill-nongla"));completedLayer.appendChild(p);
@@ -149,7 +150,7 @@ function buildArchitecturalSymbol(type){
 }
 function renderAnnotations(){
  annotationLayer.innerHTML="";
- roomLabels.forEach((r,i)=>{let t=document.createElementNS(SVGNS,"text");t.setAttribute("x",r.x);t.setAttribute("y",r.y);t.setAttribute("class","room-label");t.textContent=r.text;t.dataset.ann="room";t.dataset.index=i;annotationLayer.appendChild(t)});
+ roomLabels.forEach((r,i)=>{let t=document.createElementNS(SVGNS,"text");t.setAttribute("x",r.x);t.setAttribute("y",r.y);t.setAttribute("transform",`rotate(${r.rotation||0} ${r.x} ${r.y})`);t.setAttribute("class","room-label"+(selected?.kind==="room"&&selected.index===i?" room-label-selected":""));t.textContent=r.text;t.dataset.ann="room";t.dataset.index=i;annotationLayer.appendChild(t)});
  symbols.forEach((s,i)=>{const g=buildArchitecturalSymbol(s.type);g.setAttribute("transform",`translate(${s.x} ${s.y}) rotate(${s.rotation||0}) scale(${s.scale||1})`);g.dataset.ann="symbol";g.dataset.index=i;if(selected?.kind==="symbol"&&selected.index===i)g.classList.add("symbol-selected");g.querySelectorAll("*").forEach(n=>{n.dataset.ann="symbol";n.dataset.index=i;n.style.pointerEvents="all"});annotationLayer.appendChild(g)});
 }
 function renderMarker(){
@@ -223,19 +224,21 @@ sketch.addEventListener("click",e=>{
  if(e.target.classList.contains("wall-hit")||e.target.dataset.ann)return;
  let p=snapPoint(svgPoint(e));
  if(mode==="newstart"||(!currentSegments.length&&mode==="normal")){pushHistory();cursor=p;setMode("normal","Starting point set. The bright marker shows where the next wall begins.");render();autosave();return}
- if(mode==="room"){pushHistory();roomLabels.push({id:uid(),text:window.pendingRoom,x:p.x,y:p.y});setMode("normal","Room label placed.");render();autosave();return}
+ if(mode==="room"){pushHistory();roomLabels.push({id:uid(),text:window.pendingRoom,x:p.x,y:p.y,rotation:0});setMode("normal","Room label placed.");render();autosave();return}
  if(mode==="symbol"){pushHistory();symbols.push({id:uid(),type:window.pendingSymbol,x:p.x,y:p.y,rotation:0,scale:1});setMode("normal","Symbol placed.");render();autosave();return}
 });
 sketch.addEventListener("pointerdown",e=>{
+ if(e.target.dataset.dim){pushHistory();let p=svgPoint(e);selected={kind:"dimension",segment:e.target._segmentRef};drag={kind:"dimension",segment:e.target._segmentRef,start:p};render();e.preventDefault();return}
  if(mode==="movesketch"){pushHistory();let p=svgPoint(e);drag={kind:"wholeSketch",start:p};e.preventDefault();return}
  if(mode==="movearea"&&selected?.kind==="area"){pushHistory();let p=svgPoint(e);drag={kind:"area",index:selected.areaIndex,start:p,snapshot:JSON.parse(JSON.stringify(completedAreas[selected.areaIndex]))};e.preventDefault();return}
- if(e.target.dataset.ann){let p=svgPoint(e),kind=e.target.dataset.ann,index=+e.target.dataset.index;if(kind==="symbol")selected={kind:"symbol",index};pushHistory();drag={kind,index,start:p};render();e.preventDefault()}
+ if(e.target.dataset.ann){let p=svgPoint(e),kind=e.target.dataset.ann,index=+e.target.dataset.index;selected={kind,index};pushHistory();drag={kind,index,start:p};render();e.preventDefault()}
 });
 sketch.addEventListener("pointermove",e=>{
  if(!drag)return;let p=svgPoint(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y;
  if(drag.kind==="wholeSketch"){translateWholeSketch(dx,dy);drag.start=p}
  if(drag.kind==="area"){completedAreas[drag.index]=JSON.parse(JSON.stringify(drag.snapshot));translateArea(completedAreas[drag.index],dx,dy)}
  if(drag.kind==="room"){roomLabels[drag.index].x+=dx;roomLabels[drag.index].y+=dy;drag.start=p}
+ if(drag.kind==="dimension"){drag.segment.dimDx=(drag.segment.dimDx||0)+dx;drag.segment.dimDy=(drag.segment.dimDy||0)+dy;drag.start=p}
  if(drag.kind==="symbol"){symbols[drag.index].x+=dx;symbols[drag.index].y+=dy;drag.start=p}
  render();e.preventDefault()
 });
@@ -251,7 +254,7 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelect
 [notesUpdates,notesCondition,notesFeatures,notesOther].forEach(x=>x.addEventListener("change",autosave));
 jobName.addEventListener("change",autosave);
 
-(function(){let g=document.getElementById("grid");for(let x=0;x<=1200;x+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:x,x2:x,y1:0,y2:800,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}for(let y=0;y<=800;y+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:0,x2:1200,y1:y,y2:y,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}})();
+(function(){let g=document.getElementById("grid"),min=-5000,max=5000;for(let x=min;x<=max;x+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:x,x2:x,y1:min,y2:max,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}for(let y=min;y<=max;y+=50){let l=document.createElementNS(SVGNS,"line");Object.entries({x1:min,x2:max,y1:y,y2:y,stroke:"#ededed","stroke-width":1}).forEach(([k,v])=>l.setAttribute(k,v));g.appendChild(l)}})();
 let last=localStorage.getItem("gregorySketchLast");if(last&&localStorage.getItem("gregorySketchJob:"+last))loadJob(last);else{fillNotes();render()}setZoom(1);
 
 // V3.2 tablet keypad and quick placement tools
@@ -266,6 +269,8 @@ function closeSymbolPicker(){symbolModal.classList.add("hidden")}
 quickSymbolBtn.onclick=openSymbolPicker;
 document.getElementById("closeSymbolModal").onclick=closeSymbolPicker;
 document.querySelectorAll("[data-symbol-pick]").forEach(b=>b.onclick=()=>{placeSymbol(b.dataset.symbolPick);closeSymbolPicker()});
+function rotateSelectedLabel(step=90){if(!selected||selected.kind!=="room"||!roomLabels[selected.index])return alert("Tap a room label first.");pushHistory();roomLabels[selected.index].rotation=((roomLabels[selected.index].rotation||0)+step)%360;render();autosave()}
+const rotateLabelBtn=document.getElementById("toolbarRotateLabel");if(rotateLabelBtn)rotateLabelBtn.onclick=()=>rotateSelectedLabel(90);
 function rotateSelectedSymbol(step=90){if(!selected||selected.kind!=="symbol"||!symbols[selected.index])return alert("Tap a placed symbol first.");pushHistory();symbols[selected.index].rotation=((symbols[selected.index].rotation||0)+step)%360;render();autosave()}
 function deleteSelectedSymbol(){if(!selected||selected.kind!=="symbol"||!symbols[selected.index])return alert("Tap a placed symbol first.");if(confirm("Delete the selected symbol?")){pushHistory();symbols.splice(selected.index,1);selected=null;render();autosave()}}
 ["rotateSymbolBtn","modalRotateSymbolBtn"].forEach(id=>{const b=document.getElementById(id);if(b)b.onclick=()=>rotateSelectedSymbol(90)});
