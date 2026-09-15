@@ -191,6 +191,16 @@ function moveArea(){
  setMode("movearea","MOVE AREA: drag the selected completed area to a new position."); 
 }
 function translateArea(a,dx,dy){a.points=a.points.map(p=>({x:p.x+dx,y:p.y+dy}));a.segments.forEach(s=>{s.a.x+=dx;s.a.y+=dy;s.b.x+=dx;s.b.y+=dy})}
+function translateWholeSketch(dx,dy){
+ currentSegments.forEach(s=>{s.a.x+=dx;s.a.y+=dy;s.b.x+=dx;s.b.y+=dy});
+ completedAreas.forEach(a=>translateArea(a,dx,dy));
+ roomLabels.forEach(r=>{r.x+=dx;r.y+=dy});
+ symbols.forEach(s=>{s.x+=dx;s.y+=dy});
+ cursor={x:cursor.x+dx,y:cursor.y+dy};
+}
+function moveWholeSketch(){
+ setMode("movesketch","MOVE SKETCH: drag anywhere on the grid to reposition the entire sketch.");
+}
 function collectNotes(){notes={updates:notesUpdates.value,condition:notesCondition.value,features:notesFeatures.value,other:notesOther.value}}
 function fillNotes(){notesUpdates.value=notes.updates||"";notesCondition.value=notes.condition||"";notesFeatures.value=notes.features||"";notesOther.value=notes.other||""}
 function saveJob(show=true){
@@ -217,17 +227,19 @@ sketch.addEventListener("click",e=>{
  if(mode==="symbol"){pushHistory();symbols.push({id:uid(),type:window.pendingSymbol,x:p.x,y:p.y,rotation:0,scale:1});setMode("normal","Symbol placed.");render();autosave();return}
 });
 sketch.addEventListener("pointerdown",e=>{
+ if(mode==="movesketch"){pushHistory();let p=svgPoint(e);drag={kind:"wholeSketch",start:p};e.preventDefault();return}
  if(mode==="movearea"&&selected?.kind==="area"){pushHistory();let p=svgPoint(e);drag={kind:"area",index:selected.areaIndex,start:p,snapshot:JSON.parse(JSON.stringify(completedAreas[selected.areaIndex]))};e.preventDefault();return}
  if(e.target.dataset.ann){let p=svgPoint(e),kind=e.target.dataset.ann,index=+e.target.dataset.index;if(kind==="symbol")selected={kind:"symbol",index};pushHistory();drag={kind,index,start:p};render();e.preventDefault()}
 });
 sketch.addEventListener("pointermove",e=>{
  if(!drag)return;let p=svgPoint(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y;
+ if(drag.kind==="wholeSketch"){translateWholeSketch(dx,dy);drag.start=p}
  if(drag.kind==="area"){completedAreas[drag.index]=JSON.parse(JSON.stringify(drag.snapshot));translateArea(completedAreas[drag.index],dx,dy)}
  if(drag.kind==="room"){roomLabels[drag.index].x+=dx;roomLabels[drag.index].y+=dy;drag.start=p}
  if(drag.kind==="symbol"){symbols[drag.index].x+=dx;symbols[drag.index].y+=dy;drag.start=p}
  render();e.preventDefault()
 });
-sketch.addEventListener("pointerup",e=>{if(drag){drag=null;if(mode==="movearea")setMode("normal","Area moved.");autosave();e.preventDefault()}});
+sketch.addEventListener("pointerup",e=>{if(drag){drag=null;if(mode==="movearea")setMode("normal","Area moved.");if(mode==="movesketch")setMode("normal","Sketch moved.");autosave();e.preventDefault()}});
 
 document.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>addWall(b.dataset.dir));
 document.querySelectorAll("[data-symbol]").forEach(b=>b.onclick=()=>placeSymbol(b.dataset.symbol));
@@ -327,6 +339,8 @@ syncDetailsFromCore();
 
  let pan=false, drag=false, sx=0, sy=0, sl=0, st=0;
  toolbarPan.onclick=()=>{pan=!pan;viewport.classList.toggle("pan-mode",pan);toolbarPan.textContent=pan?"✓ Pan On":"✋ Pan";};
+ const moveSketchBtn=document.getElementById("toolbarMoveSketch");
+ if(moveSketchBtn) moveSketchBtn.onclick=()=>moveWholeSketch();
  viewport.addEventListener("pointerdown",e=>{
    if(!pan)return;
    drag=true;viewport.classList.add("dragging");sx=e.clientX;sy=e.clientY;sl=viewport.scrollLeft;st=viewport.scrollTop;
